@@ -103,6 +103,7 @@ export default function LoginPage() {
 
                 <button
                   onClick={() => { setPhase("email-input"); setError(""); }}
+                  type="button"
                   disabled={loading !== null}
                   className="w-full flex items-center justify-center gap-3 bg-[#16262F] hover:bg-[#1C2E38] disabled:opacity-60 border border-[rgba(255,255,255,0.08)] text-white font-medium py-3 px-4 rounded-xl transition-all text-sm"
                 >
@@ -121,18 +122,23 @@ export default function LoginPage() {
               <h1 className="text-xl font-bold text-center mb-2">Enter your email</h1>
               <p className="text-sm text-[#98A2AE] text-center mb-6">We&apos;ll send a 6-digit verification code.</p>
 
-              <div className="space-y-3">
+              <form
+                className="space-y-3"
+                onSubmit={(e) => {
+                  e.preventDefault();
+                  handleSendOTP();
+                }}
+              >
                 <input
                   type="email"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   placeholder="you@example.com"
                   className="w-full bg-[#0E1A22] border border-[rgba(255,255,255,0.08)] rounded-xl px-4 py-3 text-sm text-white placeholder:text-[#6B7682] focus:outline-none focus:border-[#00D6A4]/50 transition-colors"
-                  onKeyDown={(e) => e.key === "Enter" && handleSendOTP()}
                   autoFocus
                 />
                 <button
-                  onClick={handleSendOTP}
+                  type="submit"
                   disabled={loading !== null}
                   className="w-full bg-[#00D6A4] hover:bg-[#00B37E] disabled:opacity-60 text-[#0A1218] font-semibold py-3 rounded-xl transition-all hover:shadow-[0_0_20px_rgba(0,214,164,0.3)] text-sm flex items-center justify-center gap-2"
                 >
@@ -140,7 +146,7 @@ export default function LoginPage() {
                     <><Loader2 className="w-4 h-4 animate-spin" /> Sending code...</>
                   ) : "Send verification code"}
                 </button>
-              </div>
+              </form>
             </>
           )}
 
@@ -162,7 +168,13 @@ export default function LoginPage() {
                 </div>
               )}
 
-              <div className="space-y-3">
+              <form
+                className="space-y-3"
+                onSubmit={(e) => {
+                  e.preventDefault();
+                  handleVerifyOTP();
+                }}
+              >
                 <input
                   type="text"
                   value={otp}
@@ -170,11 +182,10 @@ export default function LoginPage() {
                   placeholder="000000"
                   maxLength={6}
                   className="w-full bg-[#0E1A22] border border-[rgba(255,255,255,0.08)] rounded-xl px-4 py-3 text-center text-2xl font-mono tracking-[0.5em] text-white placeholder:text-[#6B7682] focus:outline-none focus:border-[#00D6A4]/50 transition-colors"
-                  onKeyDown={(e) => e.key === "Enter" && handleVerifyOTP()}
                   autoFocus
                 />
                 <button
-                  onClick={handleVerifyOTP}
+                  type="submit"
                   disabled={loading !== null || otp.length !== 6}
                   className="w-full bg-[#00D6A4] hover:bg-[#00B37E] disabled:opacity-60 text-[#0A1218] font-semibold py-3 rounded-xl transition-all hover:shadow-[0_0_20px_rgba(0,214,164,0.3)] text-sm flex items-center justify-center gap-2"
                 >
@@ -182,10 +193,10 @@ export default function LoginPage() {
                     <><Loader2 className="w-4 h-4 animate-spin" /> Verifying...</>
                   ) : "Verify & sign in"}
                 </button>
-                <button onClick={handleSendOTP} className="w-full text-xs text-[#6B7682] hover:text-[#00D6A4] transition-colors py-2">
+                <button type="button" onClick={handleSendOTP} className="w-full text-xs text-[#6B7682] hover:text-[#00D6A4] transition-colors py-2">
                   Didn&apos;t receive it? Resend code
                 </button>
-              </div>
+              </form>
             </>
           )}
 
