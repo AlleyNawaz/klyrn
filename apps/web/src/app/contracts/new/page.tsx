@@ -51,7 +51,7 @@ export default function ContractCreationPage() {
     const updated = [...milestones];
     const m = updated[idx];
     if (m) {
-      (m as Record<string, string | number>)[field] = value;
+      (m as unknown as Record<string, string | number>)[field] = value;
       setMilestones(updated);
     }
   }

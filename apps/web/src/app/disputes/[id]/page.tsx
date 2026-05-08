@@ -12,7 +12,7 @@ import {
 const DEMO_DISPUTE = {
   id: "d1",
   reasonCategory: "OFF_SPEC",
-  status: "AI_DECIDED" as const,
+  status: "AI_DECIDED" as string,
   milestoneTitle: "Final Logo Delivery",
   milestoneAmount: "$500",
   contractTitle: "Logo Design for Klyrn MVP",
@@ -22,7 +22,7 @@ const DEMO_DISPUTE = {
   clientStatement: "This is not what I asked for at all. I specifically wanted a mascot logo, something friendly and approachable with a character that represents trust and security. What Ahmad delivered is just a boring wordmark with a tiny shield. I need a full mascot character, not this minimalist stuff. I want a complete redo.",
   freelancerStatement: "The brief explicitly says 'Avoid stock-style mascots, no cartoon characters, no shields with padlocks.' Keith is now asking for exactly what the brief told me NOT to do. I delivered a modern, minimalist wordmark with a custom typeface, exactly as specified. The SVG is clean, works at all sizes, and includes the style guide. This matches every single requirement in the brief.",
   aiVerdict: {
-    verdict: "APPROVED" as const,
+    verdict: "APPROVED" as string,
     confidence: 94,
     reasoning: `Analysis
 

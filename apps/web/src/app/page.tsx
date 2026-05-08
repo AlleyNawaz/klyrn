@@ -18,7 +18,7 @@ const DEMO_STEPS = [
 ];
 
 const DEMO_VERDICT = {
-  verdict: "APPROVED" as const,
+  verdict: "APPROVED" as string,
   confidence: 94,
   reasoning: `The brief explicitly states: "Modern, minimalist, vector format, must include a custom wordmark. Avoid stock-style mascots." The freelancer delivered exactly what was specified, a clean SVG logo with a custom wordmark. The client's dispute requesting a mascot directly contradicts their own brief. Funds released to freelancer.`,
 };

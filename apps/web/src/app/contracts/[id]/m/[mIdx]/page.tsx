@@ -11,7 +11,7 @@ const DEMO_MILESTONE = {
   title: "Final Logo Delivery",
   description: "Complete logo package: SVG, PNG exports, and mini style guide",
   amount: "$500",
-  status: "DISPUTED" as const,
+  status: "DISPUTED" as "PENDING" | "SUBMITTED" | "APPROVED" | "DISPUTED",
   submittedAt: "2025-06-04T14:00:00Z",
   submissionNotes: "Here's the final logo! Clean, modern wordmark with a subtle shield element integrated into the 'K'. Delivered in SVG + PNG. Also included a quick style guide.",
   submissionFiles: [

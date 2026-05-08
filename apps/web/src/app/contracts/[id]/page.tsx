@@ -12,7 +12,7 @@ import {
 const DEMO_CONTRACT = {
   id: "demo-logo-contract",
   title: "Logo Design for Klyrn MVP",
-  status: "ACTIVE" as const,
+  status: "ACTIVE" as string,
   totalAmountUsdcCents: "50000",
   autoApprovalDays: 5,
   createdAt: "2025-06-01T00:00:00Z",
@@ -27,7 +27,7 @@ const DEMO_CONTRACT = {
       title: "Final Logo Delivery",
       description: "Complete logo package: SVG, PNG exports, and mini style guide",
       amountUsdcCents: "50000",
-      status: "DISPUTED" as const,
+      status: "DISPUTED" as string,
       submittedAt: "2025-06-04T14:00:00Z",
       submissionNotes: "Here's the final logo! Clean, modern wordmark with a subtle shield element integrated into the 'P'. Delivered in SVG + PNG. Also included a quick style guide.",
       submissionFiles: [

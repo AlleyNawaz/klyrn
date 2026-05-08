@@ -3,6 +3,7 @@ import Link from "next/link";
 import "./globals.css";
 
 export const metadata: Metadata = {
+  metadataBase: new URL("https://klyrn.xyz"),
   title: "Klyrn | Get paid. No middlemen. No 8-week disputes.",
   description: "Klyrn is escrow for freelancers, with AI that resolves disputes in 8 seconds, not 8 weeks. 1% fee, instant USDC payouts on Solana. No chargebacks.",
   keywords: ["freelance", "escrow", "payments", "dispute resolution", "AI", "Solana", "Klyrn"],
