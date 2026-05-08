@@ -2,8 +2,8 @@
 
 import { useState } from "react";
 import { usePathname, useRouter } from "next/navigation";
-import { Shield, LayoutDashboard, FileText, Scale, Settings, LogOut, Bell, Search, Plus, Home, Loader2 } from "lucide-react";
-import { useAuth, logoutUser } from "@/lib/auth";
+import { useSession, signOut } from "next-auth/react";
+import { Shield, LayoutDashboard, FileText, Scale, Settings, LogOut, Bell, Search, Plus, Loader2 } from "lucide-react";
 import Link from "next/link";
 
 interface DashboardLayoutProps {
@@ -21,9 +21,10 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
   const [sidebarOpen, setSidebarOpen] = useState(true);
   const pathname = usePathname();
   const router = useRouter();
-  const { user, loading, isAuthenticated } = useAuth(true);
+  const { data: session, status } = useSession();
 
-  if (loading) {
+  // Loading state
+  if (status === "loading") {
     return (
       <div className="min-h-screen bg-[var(--bg-primary)] flex items-center justify-center">
         <Loader2 className="w-6 h-6 text-[#00D6A4] animate-spin" />
@@ -31,11 +32,19 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
     );
   }
 
-  if (!isAuthenticated) return null; // useAuth will redirect
+  // Not authenticated — redirect to login
+  if (status === "unauthenticated") {
+    router.replace("/login");
+    return null;
+  }
 
-  const handleLogout = () => {
-    logoutUser();
-    router.push("/");
+  const user = session?.user;
+  const userName = user?.name || "User";
+  const userEmail = user?.email || "";
+  const userInitial = userName.charAt(0).toUpperCase();
+
+  const handleLogout = async () => {
+    await signOut({ callbackUrl: "/" });
   };
 
   return (
@@ -44,7 +53,7 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
       <aside className={`${sidebarOpen ? "w-64" : "w-16"} border-r border-[#27272A] flex flex-col transition-all duration-200`}>
         <div className="h-16 flex items-center px-4 border-b border-[#27272A]">
           <Link href="/" className="flex items-center gap-2 hover:opacity-80 transition-opacity" aria-label="Back to home">
-            <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-[#00D395] to-[#00B37E] flex items-center justify-center flex-shrink-0">
+            <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-[#00D6A4] to-[#00B37E] flex items-center justify-center flex-shrink-0">
               <Shield className="w-4 h-4 text-black" />
             </div>
             {sidebarOpen && <span className="text-sm font-bold">klyrn</span>}
@@ -62,7 +71,7 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
                   : "text-[#A1A1AA] hover:text-white hover:bg-[#18181B]"
               }`}
             >
-              <item.icon className={`w-4 h-4 flex-shrink-0 ${pathname === item.href ? "text-[#00D395]" : ""}`} />
+              <item.icon className={`w-4 h-4 flex-shrink-0 ${pathname === item.href ? "text-[#00D6A4]" : ""}`} />
               {sidebarOpen && <span>{item.label}</span>}
             </Link>
           ))}
@@ -70,11 +79,15 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
 
         <div className="p-4 border-t border-[#27272A] space-y-3">
           <div className="flex items-center gap-3">
-            <div className="w-8 h-8 rounded-full bg-[#18181B] flex items-center justify-center text-xs font-medium">{user?.name?.[0] || "U"}</div>
+            {user?.image ? (
+              <img src={user.image} alt="" className="w-8 h-8 rounded-full object-cover" />
+            ) : (
+              <div className="w-8 h-8 rounded-full bg-[#18181B] flex items-center justify-center text-xs font-medium">{userInitial}</div>
+            )}
             {sidebarOpen && (
               <div className="flex-1 min-w-0">
-                <p className="text-xs font-medium truncate">{user?.name || "User"}</p>
-                <p className="text-[10px] text-[#71717A] truncate">@{user?.handle || "user"}</p>
+                <p className="text-xs font-medium truncate">{userName}</p>
+                <p className="text-[10px] text-[#71717A] truncate">{userEmail}</p>
               </div>
             )}
           </div>
@@ -97,16 +110,16 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
               <input
                 type="text"
                 placeholder="Search contracts..."
-                className="bg-[#111113] border border-[#27272A] rounded-lg pl-9 pr-4 py-2 text-sm text-white placeholder:text-[#3F3F46] focus:outline-none focus:border-[#00D395]/50 w-64"
+                className="bg-[#111113] border border-[#27272A] rounded-lg pl-9 pr-4 py-2 text-sm text-white placeholder:text-[#3F3F46] focus:outline-none focus:border-[#00D6A4]/50 w-64"
               />
             </div>
           </div>
           <div className="flex items-center gap-3">
             <button className="relative p-2 text-[#71717A] hover:text-white transition-colors">
               <Bell className="w-4 h-4" />
-              <span className="absolute top-1 right-1 w-2 h-2 rounded-full bg-[#00D395]" />
+              <span className="absolute top-1 right-1 w-2 h-2 rounded-full bg-[#00D6A4]" />
             </button>
-            <Link href="/contracts/new" className="flex items-center gap-2 bg-[#00D395] hover:bg-[#00B37E] text-black text-sm font-medium px-4 py-2 rounded-lg transition-all">
+            <Link href="/contracts/new" className="flex items-center gap-2 bg-[#00D6A4] hover:bg-[#00B37E] text-black text-sm font-medium px-4 py-2 rounded-lg transition-all">
               <Plus className="w-3.5 h-3.5" />
               New Contract
             </Link>
