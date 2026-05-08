@@ -1,11 +1,9 @@
 "use client";
 import { useState, useEffect, useRef } from "react";
 import Link from "next/link";
-import dynamic from "next/dynamic";
+import VaultScene from "./VaultScene";
 import { ArrowRight, CheckCircle2 } from "lucide-react";
 import { motion } from "framer-motion";
-
-const VaultScene = dynamic(() => import("./VaultScene"), { ssr: false });
 
 const STEPS = [
   { label: "Analyzing contract brief...", delay: 800 },

@@ -4,6 +4,7 @@ import { useSearchParams, useRouter } from "next/navigation";
 import { Suspense, useState } from "react";
 import Link from "next/link";
 import { Shield, Mail, Chrome, ArrowRight } from "lucide-react";
+import { loginUser } from "@/lib/auth";
 
 function SignupContent() {
   const params = useSearchParams();
@@ -16,6 +17,11 @@ function SignupContent() {
   async function handleAuth(method: string) {
     setLoading(method);
     await new Promise((r) => setTimeout(r, 1200));
+    loginUser({
+      email: email || "demo@klyrn.xyz",
+      name: method === "google" ? "Demo User" : (email ? email.split("@")[0] : "Demo User"),
+      handle: method === "google" ? "demo_user" : (email ? email.split("@")[0] : "demo_user"),
+    });
     router.push("/dashboard");
   }
 

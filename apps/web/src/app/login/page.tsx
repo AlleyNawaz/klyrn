@@ -4,6 +4,7 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { Shield, Mail, Chrome } from "lucide-react";
+import { loginUser } from "@/lib/auth";
 
 export default function LoginPage() {
   const router = useRouter();
@@ -13,6 +14,12 @@ export default function LoginPage() {
   async function handleAuth(method: string) {
     setLoading(method);
     await new Promise((r) => setTimeout(r, 1200));
+    // Persist demo user session
+    loginUser({
+      email: email || "demo@klyrn.xyz",
+      name: method === "google" ? "Demo User" : (email ? email.split("@")[0] : "Demo User"),
+      handle: method === "google" ? "demo_user" : (email ? email.split("@")[0] : "demo_user"),
+    });
     router.push("/dashboard");
   }
 

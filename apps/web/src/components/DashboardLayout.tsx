@@ -1,8 +1,9 @@
 "use client";
 
 import { useState } from "react";
-import { usePathname } from "next/navigation";
-import { Shield, LayoutDashboard, FileText, Scale, Settings, LogOut, Bell, Search, Plus, Home } from "lucide-react";
+import { usePathname, useRouter } from "next/navigation";
+import { Shield, LayoutDashboard, FileText, Scale, Settings, LogOut, Bell, Search, Plus, Home, Loader2 } from "lucide-react";
+import { useAuth, logoutUser } from "@/lib/auth";
 import Link from "next/link";
 
 interface DashboardLayoutProps {
@@ -19,6 +20,23 @@ const navItems = [
 export default function DashboardLayout({ children }: DashboardLayoutProps) {
   const [sidebarOpen, setSidebarOpen] = useState(true);
   const pathname = usePathname();
+  const router = useRouter();
+  const { user, loading, isAuthenticated } = useAuth(true);
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-[var(--bg-primary)] flex items-center justify-center">
+        <Loader2 className="w-6 h-6 text-[#00D6A4] animate-spin" />
+      </div>
+    );
+  }
+
+  if (!isAuthenticated) return null; // useAuth will redirect
+
+  const handleLogout = () => {
+    logoutUser();
+    router.push("/");
+  };
 
   return (
     <div className="min-h-screen bg-[var(--bg-primary)] flex">
@@ -52,19 +70,19 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
 
         <div className="p-4 border-t border-[#27272A] space-y-3">
           <div className="flex items-center gap-3">
-            <div className="w-8 h-8 rounded-full bg-[#18181B] flex items-center justify-center text-xs font-medium">K</div>
+            <div className="w-8 h-8 rounded-full bg-[#18181B] flex items-center justify-center text-xs font-medium">{user?.name?.[0] || "U"}</div>
             {sidebarOpen && (
               <div className="flex-1 min-w-0">
-                <p className="text-xs font-medium truncate">Keith Thompson</p>
-                <p className="text-[10px] text-[#71717A] truncate">@keith_t</p>
+                <p className="text-xs font-medium truncate">{user?.name || "User"}</p>
+                <p className="text-[10px] text-[#71717A] truncate">@{user?.handle || "user"}</p>
               </div>
             )}
           </div>
           {sidebarOpen && (
-            <Link href="/" className="flex items-center gap-2 text-xs text-[#71717A] hover:text-white transition-colors px-1">
+            <button onClick={handleLogout} className="flex items-center gap-2 text-xs text-[#71717A] hover:text-white transition-colors px-1">
               <LogOut className="w-3.5 h-3.5" />
               Log out
-            </Link>
+            </button>
           )}
         </div>
       </aside>
