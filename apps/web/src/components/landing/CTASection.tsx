@@ -60,7 +60,7 @@ export function Footer() {
             <Link href="/terms" className="hover:text-white transition-colors">Terms</Link>
             <Link href="/privacy" className="hover:text-white transition-colors">Privacy</Link>
             <Link href="/docs" className="hover:text-white transition-colors">Docs</Link>
-            <a href="https://github.com/klyrn" target="_blank" rel="noopener noreferrer" className="hover:text-white transition-colors">GitHub</a>
+            <a href="https://github.com/AlleyNawaz/klyrn" target="_blank" rel="noopener noreferrer" className="hover:text-white transition-colors">GitHub</a>
           </div>
           <p className="text-xs text-[#6F767E]">© 2026 Klyrn. All rights reserved.</p>
         </div>
