@@ -1,0 +1,36 @@
+{
+  "name": "@klyrn/api",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "dev": "tsx watch src/index.ts",
+    "worker": "tsx watch src/services/worker.ts",
+    "build": "tsc",
+    "start": "node dist/index.js",
+    "lint": "tsc --noEmit"
+  },
+  "dependencies": {
+    "hono": "^4.4.0",
+    "@hono/node-server": "^1.11.0",
+    "@hono/zod-validator": "^0.2.2",
+    "zod": "^3.23.8",
+    "@klyrn/db": "workspace:*",
+    "@klyrn/types": "workspace:*",
+    "@klyrn/sdk": "workspace:*",
+    "@coral-xyz/anchor": "^0.30.1",
+    "@solana/web3.js": "^1.95.3",
+    "@solana/spl-token": "^0.4.8",
+    "bullmq": "^5.7.0",
+    "ioredis": "^5.4.1",
+    "@aws-sdk/client-s3": "^3.590.0",
+    "@aws-sdk/s3-request-presigner": "^3.590.0",
+    "resend": "^3.4.0",
+    "nanoid": "^5.0.7",
+    "dotenv": "^16.4.5"
+  },
+  "devDependencies": {
+    "typescript": "~5.4.5",
+    "tsx": "^4.11.0",
+    "@types/node": "^20.14.0"
+  }
+}

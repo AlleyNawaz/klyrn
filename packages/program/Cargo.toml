@@ -1,0 +1,7 @@
+[workspace]
+resolver = "2"
+members = ["programs/proofpay"]
+
+[profile.release]
+overflow-checks = true
+lto = "fat"

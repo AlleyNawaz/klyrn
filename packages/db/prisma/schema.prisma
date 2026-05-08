@@ -1,0 +1,330 @@
+// ============================================================
+// Klyrn Database — Prisma Schema
+// Section 4 of spec. All IDs are cuid2. Timestamps are timestamptz.
+// ============================================================
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ---- Enums ----
+
+enum UserRole {
+  FREELANCER
+  CLIENT
+  BOTH
+}
+
+enum KycStatus {
+  NONE
+  PENDING
+  VERIFIED
+  REJECTED
+}
+
+enum ContractStatus {
+  PENDING_ACCEPTANCE
+  ACTIVE
+  COMPLETED
+  CANCELLED
+  REFUNDED
+}
+
+enum MilestoneStatus {
+  PENDING
+  SUBMITTED
+  APPROVED
+  DISPUTED
+  PARTIALLY_RELEASED
+  REJECTED
+}
+
+enum DecisionAuthority {
+  CLIENT
+  AI
+  JUROR_PANEL
+  AUTO_TIMEOUT
+  FREELANCER_REFUND
+}
+
+enum MilestoneDecision {
+  APPROVED
+  REJECTED
+  PARTIAL
+}
+
+enum DisputeReason {
+  INCOMPLETE
+  OFF_SPEC
+  LOW_QUALITY
+  PLAGIARISM
+  LATE
+  OTHER
+}
+
+enum DisputeStatus {
+  AWAITING_RESPONSES
+  AI_REVIEW
+  AI_DECIDED
+  ESCALATED_TO_JURY
+  JURY_VOTING
+  RESOLVED
+}
+
+// ---- Models ----
+
+model User {
+  id              String    @id @default(cuid())
+  email           String    @unique
+  handle          String    @unique
+  displayName     String
+  avatarUrl       String?
+
+  privyDid        String    @unique
+  walletAddress   String    @unique
+
+  role            UserRole  @default(BOTH)
+  country         String?
+  timezone        String?
+
+  reputationNftMint String?
+
+  // Aggregated reputation (cached from on-chain)
+  totalContractsCompleted Int     @default(0)
+  totalVolumeUsdCents     Int     @default(0)
+  disputeRate             Float   @default(0)
+  avgRating               Float?
+  onTimeDeliveryRate      Float?
+  onTimePaymentRate       Float?
+
+  // KYC-lite
+  kycStatus       KycStatus @default(NONE)
+  kycVerifiedAt   DateTime?
+
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+  deletedAt       DateTime?
+
+  contractsAsClient     Contract[] @relation("ClientContracts")
+  contractsAsFreelancer Contract[] @relation("FreelancerContracts")
+  jurorProfile          JurorProfile?
+  jurorVotes            JurorVote[]
+  notifications         Notification[]
+
+  @@map("users")
+}
+
+model Contract {
+  id              String    @id @default(cuid())
+
+  clientId        String
+  client          User      @relation("ClientContracts", fields: [clientId], references: [id])
+  freelancerId    String
+  freelancer      User      @relation("FreelancerContracts", fields: [freelancerId], references: [id])
+
+  title           String
+  briefMarkdown   String    @db.Text
+  briefAttachments Json     @default("[]")
+
+  totalAmountUsdcCents BigInt
+
+  status          ContractStatus @default(PENDING_ACCEPTANCE)
+
+  // On-chain references
+  contractPda     String?
+  escrowPda       String?
+  contractTxSig   String?
+
+  // Settings
+  autoApprovalDays Int @default(5)
+
+  createdAt       DateTime  @default(now())
+  acceptedAt      DateTime?
+  completedAt     DateTime?
+  cancelledAt     DateTime?
+
+  milestones      Milestone[]
+  events          ContractEvent[]
+  ratings         Rating[]
+
+  @@map("contracts")
+}
+
+model Milestone {
+  id              String    @id @default(cuid())
+  contractId      String
+  contract        Contract  @relation(fields: [contractId], references: [id])
+
+  index           Int
+  title           String
+  description     String    @db.Text
+  amountUsdcCents BigInt
+  dueDate         DateTime?
+
+  status          MilestoneStatus @default(PENDING)
+
+  // Submission
+  submittedAt     DateTime?
+  submissionNotes String?   @db.Text
+  submissionFiles Json?
+  submissionExternalLinks Json?
+  submissionScreencastUrl String?
+
+  // Decision
+  decidedAt       DateTime?
+  decidedBy       DecisionAuthority?
+  decision        MilestoneDecision?
+  partialPercent  Int?
+
+  // On-chain
+  releaseTxSig    String?
+
+  autoApprovalAt  DateTime?
+
+  dispute         Dispute?
+
+  @@unique([contractId, index])
+  @@map("milestones")
+}
+
+model Dispute {
+  id              String    @id @default(cuid())
+  milestoneId     String    @unique
+  milestone       Milestone @relation(fields: [milestoneId], references: [id])
+
+  openedById      String
+  reasonCategory  DisputeReason
+  clientStatement String?   @db.Text
+  clientFiles     Json?
+  freelancerStatement String? @db.Text
+  freelancerFiles Json?
+
+  status          DisputeStatus @default(AWAITING_RESPONSES)
+
+  // AI decision
+  aiVerdict       MilestoneDecision?
+  aiConfidence    Int?
+  aiReasoning     String?   @db.Text
+  aiPartialPercent Int?
+  aiRanAt         DateTime?
+
+  // Final
+  finalDecision   MilestoneDecision?
+  finalPartialPercent Int?
+  decidedAt       DateTime?
+  decidedBy       DecisionAuthority?
+
+  // Human jury
+  jurorVotes      JurorVote[]
+  appealedAt      DateTime?
+  appealFeeUsdcCents BigInt?
+
+  responseDeadline DateTime
+
+  openedAt        DateTime  @default(now())
+
+  @@map("disputes")
+}
+
+model JurorProfile {
+  id              String    @id @default(cuid())
+  userId          String    @unique
+  user            User      @relation(fields: [userId], references: [id])
+
+  stakeAmount     BigInt
+  stakeTxSig      String
+
+  expertise       String[]
+
+  totalVotes      Int       @default(0)
+  correctVotes    Int       @default(0)
+  totalEarnedUsdcCents BigInt @default(0)
+
+  isActive        Boolean   @default(true)
+
+  joinedAt        DateTime  @default(now())
+
+  @@map("juror_profiles")
+}
+
+model JurorVote {
+  id              String    @id @default(cuid())
+  disputeId       String
+  dispute         Dispute   @relation(fields: [disputeId], references: [id])
+  jurorId         String
+  juror           User      @relation(fields: [jurorId], references: [id])
+
+  vote            MilestoneDecision
+  partialPercent  Int?
+  reasoning       String    @db.Text
+
+  votedAt         DateTime  @default(now())
+  wasCorrect      Boolean?
+
+  @@unique([disputeId, jurorId])
+  @@map("juror_votes")
+}
+
+model Rating {
+  id              String    @id @default(cuid())
+  contractId      String
+  contract        Contract  @relation(fields: [contractId], references: [id])
+  fromUserId      String
+  toUserId        String
+  rating          Int
+  comment         String?
+  createdAt       DateTime  @default(now())
+
+  @@unique([contractId, fromUserId])
+  @@map("ratings")
+}
+
+model ContractEvent {
+  id              String    @id @default(cuid())
+  contractId      String
+  contract        Contract  @relation(fields: [contractId], references: [id])
+  type            String
+  payload         Json
+  txSig           String?
+  createdAt       DateTime  @default(now())
+
+  @@map("contract_events")
+}
+
+model Notification {
+  id              String    @id @default(cuid())
+  userId          String
+  user            User      @relation(fields: [userId], references: [id])
+  type            String
+  title           String
+  body            String
+  ctaUrl          String?
+  readAt          DateTime?
+  emailSent       Boolean   @default(false)
+  createdAt       DateTime  @default(now())
+
+  @@map("notifications")
+}
+
+// ---- Arbitration audit log (Section 7) ----
+
+model ArbitrationLog {
+  id              String    @id @default(cuid())
+  disputeId       String
+  requestHash     String    @unique  // cache key
+  request         Json
+  response        Json
+  model           String
+  tokensInput     Int
+  tokensOutput    Int
+  costUsd         Float
+  durationMs      Int
+  createdAt       DateTime  @default(now())
+
+  @@map("arbitration_logs")
+}
