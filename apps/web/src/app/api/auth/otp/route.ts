@@ -30,18 +30,18 @@ export async function POST(req: Request) {
     });
 
     if (error) {
-      console.error("[OTP] Resend error:", error);
-      return NextResponse.json({ error: error.message || "Failed to send email" }, { status: 500 });
+      console.warn("[OTP] Resend error (falling back to UI code display):", error);
+      // We don't throw 500 here anymore so the hackathon demo can continue
     }
 
-    // For demo/hackathon: OTP is logged to server console
-    // In dev, also return it to the client so the flow works without email
-    const isDev = process.env.NODE_ENV === "development";
+    // For demo/hackathon without a custom domain: 
+    // We expose the code to the UI if we're in dev mode, if GOD_MODE is true, or if Resend failed.
+    const showCodeInUI = process.env.NODE_ENV === "development" || process.env.GOD_MODE === "true" || !!error;
 
     return NextResponse.json({
       success: true,
-      message: "Verification code sent to your email",
-      ...(isDev ? { code } : {}), // Only expose in dev
+      message: error ? "Demo Mode: Use the code shown below" : "Verification code sent to your email",
+      ...(showCodeInUI ? { code } : {}),
     });
   } catch (err: any) {
     console.error("[OTP] Route error:", err);
