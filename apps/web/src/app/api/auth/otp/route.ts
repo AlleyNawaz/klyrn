@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import { createOTP } from "@/lib/auth";
 import { Resend } from "resend";
 
-const resend = new Resend(process.env.RESEND_API_KEY || "re_j5qgw1v6_JCszH9JvCbwK8j7RmwzdpATK");
+const resend = new Resend(process.env.RESEND_API_KEY);
 
 export async function POST(req: Request) {
   try {
