@@ -1,6 +1,7 @@
 "use client";
 import { useState, useEffect, useRef } from "react";
 import Link from "next/link";
+import { useSession } from "next-auth/react";
 import { Shield, Menu, X } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 
@@ -15,6 +16,7 @@ export default function Navbar() {
   const [active, setActive] = useState("");
   const [mobileOpen, setMobileOpen] = useState(false);
   const btnRef = useRef<HTMLAnchorElement>(null);
+  const { data: session, status } = useSession();
 
   useEffect(() => {
     let lastY = 0;
@@ -115,17 +117,30 @@ export default function Navbar() {
 
           {/* Right: CTA */}
           <div className="flex items-center gap-2">
-            <Link href="/login" className="hidden md:block text-sm text-[#98A2AE] hover:text-[#ECEEF0] transition-colors px-3 py-2">
-              Log in
-            </Link>
-            <Link
-              ref={btnRef}
-              href="/contracts/new"
-              className="text-sm font-medium bg-[#00D6A4] text-[#0A1218] px-[18px] py-[10px] rounded-[10px] transition-all duration-200 hover:brightness-110 hover:scale-[1.02]"
-              style={{ boxShadow: "0 4px 16px rgba(0,214,164,0.25), 0 0 0 1px rgba(0,214,164,0.4) inset" }}
-            >
-              Start a contract
-            </Link>
+            {status === "authenticated" ? (
+              <Link
+                ref={btnRef}
+                href="/dashboard"
+                className="text-sm font-medium bg-[#00D6A4] text-[#0A1218] px-[18px] py-[10px] rounded-[10px] transition-all duration-200 hover:brightness-110 hover:scale-[1.02]"
+                style={{ boxShadow: "0 4px 16px rgba(0,214,164,0.25), 0 0 0 1px rgba(0,214,164,0.4) inset" }}
+              >
+                Dashboard
+              </Link>
+            ) : (
+              <>
+                <Link href="/login" className="hidden md:block text-sm text-[#98A2AE] hover:text-[#ECEEF0] transition-colors px-3 py-2">
+                  Log in
+                </Link>
+                <Link
+                  ref={btnRef}
+                  href="/login"
+                  className="text-sm font-medium bg-[#00D6A4] text-[#0A1218] px-[18px] py-[10px] rounded-[10px] transition-all duration-200 hover:brightness-110 hover:scale-[1.02]"
+                  style={{ boxShadow: "0 4px 16px rgba(0,214,164,0.25), 0 0 0 1px rgba(0,214,164,0.4) inset" }}
+                >
+                  Start a contract
+                </Link>
+              </>
+            )}
             {/* Mobile hamburger */}
             <button onClick={() => setMobileOpen(!mobileOpen)} className="md:hidden text-[#98A2AE] hover:text-white p-2">
               {mobileOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
@@ -156,7 +171,11 @@ export default function Navbar() {
               </motion.button>
             ))}
             <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 }}>
-              <Link href="/login" className="text-lg text-[#98A2AE]" onClick={() => setMobileOpen(false)}>Log in</Link>
+              {status === "authenticated" ? (
+                <Link href="/dashboard" className="text-lg text-[#00D6A4]" onClick={() => setMobileOpen(false)}>Dashboard</Link>
+              ) : (
+                <Link href="/login" className="text-lg text-[#98A2AE]" onClick={() => setMobileOpen(false)}>Log in</Link>
+              )}
             </motion.div>
           </motion.div>
         )}
